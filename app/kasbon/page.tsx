@@ -4,6 +4,9 @@
 // Fitur OPSIONAL — pelacak utang pelanggan. Nampilin siapa
 // masih ngutang berapa. Aktif kalau relevan (misal: user pernah
 // input transaksi dengan status "belum lunas").
+//
+// Proteksi login untuk halaman ini diatur terpusat di
+// middleware.ts.
 
 export default function KasbonPage() {
   return (

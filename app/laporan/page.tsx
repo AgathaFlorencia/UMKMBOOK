@@ -4,6 +4,9 @@
 // Ringkasan mingguan/bulanan dalam bahasa "manusiawi", contoh:
 // "Minggu ini untung Rp450rb, naik 12%". Juga nampilin produk
 // terlaris (dan margin-nya khusus untuk reseller).
+//
+// Proteksi login untuk halaman ini diatur terpusat di
+// middleware.ts.
 
 export default function LaporanPage() {
   return (

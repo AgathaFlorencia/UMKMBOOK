@@ -1,16 +1,21 @@
 // ============================================================
 // FILE INI = "PENJAGA PINTU" YANG JALAN DI SETIAP REQUEST
 // ============================================================
-// Fungsinya: mengecek & memperpanjang session login user secara
-// otomatis di background, supaya user gak perlu login ulang
-// terus-menerus tiap buka halaman baru.
-//
-// Kalau nanti mau bikin proteksi "halaman ini hanya bisa diakses
-// kalau sudah login" (misal Dashboard, Catat Transaksi), logic-nya
-// juga ditaruh di sini.
+// Fungsinya ada 2:
+// 1. Mengecek & memperpanjang session login user secara otomatis
+//    di background, supaya user gak perlu login ulang terus.
+// 2. PROTEKSI HALAMAN — kalau user belum login dan coba akses
+//    halaman yang butuh login (Dashboard, Transaksi, dll),
+//    otomatis dilempar ke /login. Ini satu-satunya tempat aturan
+//    proteksi ditulis, jadi berlaku ke SEMUA halaman sekaligus
+//    (gak perlu ditulis ulang manual di tiap file page.tsx).
 
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+
+// Halaman yang BOLEH diakses tanpa login. Selain yang ada di
+// list ini, otomatis butuh login.
+const PUBLIC_ROUTES = ["/login", "/onboarding"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -37,7 +42,25 @@ export async function middleware(request: NextRequest) {
   );
 
   // Ini yang bikin session tetap "fresh" di setiap request
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isPublicRoute = PUBLIC_ROUTES.includes(request.nextUrl.pathname);
+
+  // Belum login + buka halaman yang butuh login -> lempar ke /login
+  if (!user && !isPublicRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
+
+  // Sudah login tapi malah buka /login atau /onboarding -> lempar ke Dashboard
+  if (user && isPublicRoute) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
 
   return response;
 }
