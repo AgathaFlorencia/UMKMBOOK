@@ -1,13 +1,16 @@
 // ============================================================
-// LAYOUT UTAMA — "bungkus" semua halaman
+// LAYOUT UTAMA — "bungkus" SEMUA halaman (auth maupun app)
 // ============================================================
-// File ini otomatis membungkus SEMUA halaman di app/. Komponen
-// yang mau tampil terus-menerus di semua halaman (contoh: Navbar)
-// dipasang di sini, gak perlu ditulis ulang di tiap halaman.
+// Ini paling luar, cuma nyimpen <html>/<body> dan metadata.
+// Navbar TIDAK dipasang di sini lagi — sekarang tiap route group
+// punya navbar sendiri:
+// - app/(auth)/layout.tsx -> pakai LoginNavbar (Login, Onboarding,
+//   About, Contact)
+// - app/(app)/layout.tsx  -> pakai Navbar utama (Dashboard,
+//   Transaksi, dll — setelah login)
 
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
 
 export const metadata: Metadata = {
   title: "UMKMBook",
@@ -17,10 +20,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="id" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">
-        <Navbar />
-        {children}
-      </body>
+      <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }

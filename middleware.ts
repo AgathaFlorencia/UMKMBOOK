@@ -13,9 +13,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Halaman yang BOLEH diakses tanpa login. Selain yang ada di
-// list ini, otomatis butuh login.
-const PUBLIC_ROUTES = ["/login", "/onboarding"];
+// Halaman KHUSUS TAMU (belum login): /login dan /onboarding.
+// Kalau user yang SUDAH login coba buka halaman ini, otomatis
+// dilempar ke Dashboard (gak masuk akal orang yang udah login
+// disuruh login lagi).
+const GUEST_ONLY_ROUTES = ["/login", "/onboarding"];
+
+// Halaman yang BOLEH diakses SIAPA SAJA, baik sudah login maupun
+// belum — TIDAK di-redirect ke mana-mana.
+const ALWAYS_PUBLIC_ROUTES = ["/about", "/contact"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -46,17 +52,19 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isPublicRoute = PUBLIC_ROUTES.includes(request.nextUrl.pathname);
+  const pathname = request.nextUrl.pathname;
+  const isGuestOnlyRoute = GUEST_ONLY_ROUTES.includes(pathname);
+  const isAlwaysPublicRoute = ALWAYS_PUBLIC_ROUTES.includes(pathname);
 
   // Belum login + buka halaman yang butuh login -> lempar ke /login
-  if (!user && !isPublicRoute) {
+  if (!user && !isGuestOnlyRoute && !isAlwaysPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
   // Sudah login tapi malah buka /login atau /onboarding -> lempar ke Dashboard
-  if (user && isPublicRoute) {
+  if (user && isGuestOnlyRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
     return NextResponse.redirect(url);
