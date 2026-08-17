@@ -1,14 +1,15 @@
 // ============================================================
-// LIB: DASHBOARD (fungsi ringkasan hari ini)
+// LIB: DASHBOARD (ringkasan HARI INI — arus kas harian)
 // ============================================================
-// Dipakai di halaman Dashboard (app/page.tsx) buat nampilin
-// total masuk, total keluar, dan untung hari ini.
+// Dipakai di halaman Dashboard buat nampilin snapshot cepat kas
+// masuk/keluar HARI INI saja. Beda dengan lib/laporan.ts yang
+// menghitung untuk PERIODE yang dipilih user (bisa satu hari
+// tertentu atau rentang berhari-hari/berbulan-bulan).
 //
-// Dashboard adalah "server component" (bukan "use client"), jadi
-// file ini pakai lib/supabase-server.ts, BEDA dengan lib/transaksi.ts
-// dan lib/produk.ts yang dipakai dari komponen client.
+// Dashboard sekarang "use client" (karena ada filter tanggal
+// interaktif), jadi file ini pakai lib/supabase-client.ts.
 
-import { createClient } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase-client";
 
 export interface RingkasanHariIni {
   totalMasuk: number;
@@ -17,10 +18,7 @@ export interface RingkasanHariIni {
 }
 
 export async function getRingkasanHariIni(): Promise<RingkasanHariIni> {
-  const supabase = await createClient();
-
-  // Format tanggal hari ini jadi "YYYY-MM-DD" sesuai tipe kolom
-  // "tanggal" (date) di tabel transaksi.
+  const supabase = createClient();
   const hariIni = new Date().toISOString().split("T")[0];
 
   const { data, error } = await supabase
@@ -35,18 +33,10 @@ export async function getRingkasanHariIni(): Promise<RingkasanHariIni> {
 
   let totalMasuk = 0;
   let totalKeluar = 0;
-
   for (const row of data) {
-    if (row.jenis === "jual") {
-      totalMasuk += row.total;
-    } else if (row.jenis === "beli") {
-      totalKeluar += row.total;
-    }
+    if (row.jenis === "jual") totalMasuk += row.total;
+    else if (row.jenis === "beli") totalKeluar += row.total;
   }
 
-  return {
-    totalMasuk,
-    totalKeluar,
-    untung: totalMasuk - totalKeluar,
-  };
+  return { totalMasuk, totalKeluar, untung: totalMasuk - totalKeluar };
 }

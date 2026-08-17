@@ -15,7 +15,6 @@ const menu = [
   { href: "/produk", label: "Produk" },
   { href: "/riwayat", label: "Riwayat" },
   { href: "/kasbon", label: "Kasbon" },
-  { href: "/laporan", label: "Laporan" },
   { href: "/pengaturan", label: "Pengaturan" },
 ];
 

@@ -5,6 +5,9 @@
 // catatan utang baru, lihat siapa masih ngutang berapa, dan
 // tandai "Lunas" kalau sudah dibayar.
 //
+// Sebelum status berubah jadi Lunas, muncul ConfirmModal dulu —
+// mencegah kejadian gak sengaja klik dan status ke-ubah instan.
+//
 // "use client" karena ada interaksi tambah data + update status
 // langsung di halaman ini.
 //
@@ -20,6 +23,7 @@ import {
   type Kasbon,
 } from "@/lib/kasbon";
 import { formatRupiah } from "@/lib/format";
+import ConfirmModal from "@/components/ConfirmModal";
 
 export default function KasbonPage() {
   const [daftarKasbon, setDaftarKasbon] = useState<Kasbon[]>([]);
@@ -29,6 +33,12 @@ export default function KasbonPage() {
   const [jumlahUtang, setJumlahUtang] = useState("");
   const [menyimpan, setMenyimpan] = useState(false);
   const [error, setError] = useState("");
+
+  // State buat modal konfirmasi: kasbon mana yang mau ditandai
+  // lunas (null = modal tertutup).
+  const [kasbonDikonfirmasi, setKasbonDikonfirmasi] = useState<Kasbon | null>(
+    null
+  );
 
   async function muatUlang() {
     const data = await getDaftarKasbon();
@@ -62,9 +72,22 @@ export default function KasbonPage() {
     muatUlang();
   }
 
-  async function handleTandaiLunas(id: string) {
-    await tandaiLunas(id);
+  // Diklik dari tombol "Tandai Lunas" -> buka modal, BELUM ubah status
+  function handleMintaKonfirmasi(kasbon: Kasbon) {
+    setKasbonDikonfirmasi(kasbon);
+  }
+
+  // Diklik dari tombol "Ya, Tandai Lunas" di dalam modal -> baru
+  // ubah status beneran
+  async function handleKonfirmasiLunas() {
+    if (!kasbonDikonfirmasi) return;
+    await tandaiLunas(kasbonDikonfirmasi.id);
+    setKasbonDikonfirmasi(null);
     muatUlang();
+  }
+
+  function handleBatalKonfirmasi() {
+    setKasbonDikonfirmasi(null);
   }
 
   const totalBelumLunas = daftarKasbon
@@ -137,7 +160,7 @@ export default function KasbonPage() {
               </span>
             ) : (
               <button
-                onClick={() => handleTandaiLunas(k.id)}
+                onClick={() => handleMintaKonfirmasi(k)}
                 className="text-xs px-3 py-1.5 rounded-lg border border-black"
               >
                 Tandai Lunas
@@ -146,6 +169,21 @@ export default function KasbonPage() {
           </div>
         ))}
       </div>
+
+      {/* Modal konfirmasi, cuma tampil kalau kasbonDikonfirmasi terisi */}
+      <ConfirmModal
+        isOpen={kasbonDikonfirmasi !== null}
+        title="Konfirmasi Pembayaran"
+        message={
+          kasbonDikonfirmasi
+            ? `Apakah Anda yakin ingin menandai kasbon "${kasbonDikonfirmasi.nama_pelanggan}" sebesar ${formatRupiah(kasbonDikonfirmasi.jumlah_utang)} sebagai lunas?`
+            : ""
+        }
+        confirmLabel="Ya, Tandai Lunas"
+        cancelLabel="Batal"
+        onConfirm={handleKonfirmasiLunas}
+        onCancel={handleBatalKonfirmasi}
+      />
     </main>
   );
 }

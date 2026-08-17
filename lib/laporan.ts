@@ -1,110 +1,123 @@
 // ============================================================
-// LIB: LAPORAN (ringkasan bulanan + produk terlaris)
+// LIB: LAPORAN (ringkasan & insight untuk PERIODE yang dipilih)
 // ============================================================
-// Dipakai di halaman Laporan (app/laporan/page.tsx). Ini yang
-// menjawab concern "untung harian itu timpang buat usaha yang
-// belanja bahan sekali di awal bulan" — laporan di sini menghitung
-// dalam rentang SEBULAN PENUH, jadi pembelian besar di awal bulan
-// "terserap" oleh penjualan harian sepanjang bulan itu.
+// Dipakai di halaman Dashboard, bagian filter tanggal. Beda
+// dengan lib/dashboard.ts yang selalu "hari ini", semua fungsi
+// di sini menerima rentang tanggal (awal, akhir) dari filter
+// yang dipilih user — bisa satu tanggal spesifik (awal = akhir
+// sama) atau rentang beberapa hari/bulan.
 
-import { createClient } from "@/lib/supabase-server";
+import { createClient } from "@/lib/supabase-client";
 
 // ------------------------------------------------------------
-// Bagian 1: Ringkasan untung-rugi bulan ini vs bulan lalu
+// Bagian 1: Ringkasan angka untuk periode yang difilter
 // ------------------------------------------------------------
 
-export interface RingkasanBulanan {
+export interface RingkasanPeriode {
   totalMasuk: number;
   totalKeluar: number;
-  untungBulanIni: number;
-  untungBulanLalu: number;
-  persentasePerubahan: number | null; // null kalau bulan lalu belum ada data
+  untung: number;
+  jumlahTransaksi: number;
+  totalProdukTerjual: number;
 }
 
-function formatTanggal(d: Date): string {
-  return d.toISOString().split("T")[0];
-}
-
-// Ambil batas awal & akhir suatu bulan (offset 0 = bulan ini,
-// -1 = bulan lalu, dst), dalam format "YYYY-MM-DD".
-function rentangBulan(offsetBulan: number) {
-  const sekarang = new Date();
-  const awal = new Date(
-    sekarang.getFullYear(),
-    sekarang.getMonth() + offsetBulan,
-    1
-  );
-  const akhir = new Date(
-    sekarang.getFullYear(),
-    sekarang.getMonth() + offsetBulan + 1,
-    1
-  );
-  return { awal: formatTanggal(awal), akhir: formatTanggal(akhir) };
-}
-
-async function totalUntungPeriode(
+export async function getRingkasanPeriode(
   awal: string,
   akhir: string
-): Promise<{ totalMasuk: number; totalKeluar: number }> {
-  const supabase = await createClient();
+): Promise<RingkasanPeriode> {
+  const supabase = createClient();
 
   const { data, error } = await supabase
     .from("transaksi")
-    .select("jenis, total")
+    .select("jenis, total, jumlah")
     .gte("tanggal", awal)
-    .lt("tanggal", akhir);
+    .lte("tanggal", akhir);
 
   if (error || !data) {
-    console.error("Gagal ambil data laporan:", error?.message);
-    return { totalMasuk: 0, totalKeluar: 0 };
+    console.error("Gagal ambil ringkasan periode:", error?.message);
+    return {
+      totalMasuk: 0,
+      totalKeluar: 0,
+      untung: 0,
+      jumlahTransaksi: 0,
+      totalProdukTerjual: 0,
+    };
   }
 
   let totalMasuk = 0;
   let totalKeluar = 0;
+  let totalProdukTerjual = 0;
+
   for (const row of data) {
-    if (row.jenis === "jual") totalMasuk += row.total;
-    else if (row.jenis === "beli") totalKeluar += row.total;
-  }
-
-  return { totalMasuk, totalKeluar };
-}
-
-export async function getRingkasanBulanan(): Promise<RingkasanBulanan> {
-  const bulanIni = rentangBulan(0);
-  const bulanLalu = rentangBulan(-1);
-
-  const [dataBulanIni, dataBulanLalu] = await Promise.all([
-    totalUntungPeriode(bulanIni.awal, bulanIni.akhir),
-    totalUntungPeriode(bulanLalu.awal, bulanLalu.akhir),
-  ]);
-
-  const untungBulanIni = dataBulanIni.totalMasuk - dataBulanIni.totalKeluar;
-  const untungBulanLalu = dataBulanLalu.totalMasuk - dataBulanLalu.totalKeluar;
-
-  let persentasePerubahan: number | null = null;
-  if (untungBulanLalu !== 0) {
-    persentasePerubahan =
-      ((untungBulanIni - untungBulanLalu) / Math.abs(untungBulanLalu)) * 100;
+    if (row.jenis === "jual") {
+      totalMasuk += row.total;
+      totalProdukTerjual += row.jumlah;
+    } else if (row.jenis === "beli") {
+      totalKeluar += row.total;
+    }
   }
 
   return {
-    totalMasuk: dataBulanIni.totalMasuk,
-    totalKeluar: dataBulanIni.totalKeluar,
-    untungBulanIni,
-    untungBulanLalu,
-    persentasePerubahan,
+    totalMasuk,
+    totalKeluar,
+    untung: totalMasuk - totalKeluar,
+    jumlahTransaksi: data.length,
+    totalProdukTerjual,
   };
 }
 
 // ------------------------------------------------------------
-// Bagian 2: Produk terlaris bulan ini (+ margin untuk reseller)
+// Bagian 2: Data grafik penjualan harian dalam periode
+// ------------------------------------------------------------
+
+export interface TitikGrafikHarian {
+  tanggal: string;
+  totalMasuk: number;
+}
+
+export async function getGrafikPenjualanHarian(
+  awal: string,
+  akhir: string
+): Promise<TitikGrafikHarian[]> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from("transaksi")
+    .select("tanggal, total")
+    .eq("jenis", "jual")
+    .gte("tanggal", awal)
+    .lte("tanggal", akhir)
+    .order("tanggal", { ascending: true });
+
+  if (error || !data) {
+    console.error("Gagal ambil data grafik:", error?.message);
+    return [];
+  }
+
+  const perTanggal = new Map<string, number>();
+  for (const row of data) {
+    perTanggal.set(
+      row.tanggal,
+      (perTanggal.get(row.tanggal) ?? 0) + row.total
+    );
+  }
+
+  return Array.from(perTanggal.entries()).map(([tanggal, totalMasuk]) => ({
+    tanggal,
+    totalMasuk,
+  }));
+}
+
+// ------------------------------------------------------------
+// Bagian 3: Produk terlaris — bisa untuk periode TERTENTU,
+// atau ALL-TIME (tanpa filter tanggal sama sekali)
 // ------------------------------------------------------------
 
 export interface ProdukTerlaris {
   namaProduk: string;
   satuan: string;
   jumlahTerjual: number;
-  omzet: number; // total pendapatan dari produk ini
+  omzet: number;
   margin: number | null; // null kalau modal_per_unit belum diisi
 }
 
@@ -115,24 +128,33 @@ interface KelompokProduk {
   omzet: number;
 }
 
-export async function getProdukTerlaris(): Promise<ProdukTerlaris[]> {
-  const supabase = await createClient();
-  const { awal, akhir } = rentangBulan(0);
+// Fungsi inti (dipakai bareng oleh keduanya di bawah).
+// awal & akhir null = ambil SEMUA transaksi (all-time).
+async function hitungProdukTerlaris(
+  awal: string | null,
+  akhir: string | null
+): Promise<ProdukTerlaris[]> {
+  const supabase = createClient();
 
-  // Ambil semua transaksi JUAL bulan ini
-  const { data: transaksiBulanIni, error: errTransaksi } = await supabase
+  let query = supabase
     .from("transaksi")
     .select("nama_produk, satuan, jumlah, total")
-    .eq("jenis", "jual")
-    .gte("tanggal", awal)
-    .lt("tanggal", akhir);
+    .eq("jenis", "jual");
 
-  if (errTransaksi || !transaksiBulanIni) {
-    console.error("Gagal ambil transaksi untuk produk terlaris:", errTransaksi?.message);
+  if (awal && akhir) {
+    query = query.gte("tanggal", awal).lte("tanggal", akhir);
+  }
+
+  const { data: transaksiList, error: errTransaksi } = await query;
+
+  if (errTransaksi || !transaksiList) {
+    console.error(
+      "Gagal ambil transaksi produk terlaris:",
+      errTransaksi?.message
+    );
     return [];
   }
 
-  // Ambil modal_per_unit tiap produk (buat hitung margin)
   const { data: daftarProduk } = await supabase
     .from("produk")
     .select("nama_produk, modal_per_unit");
@@ -142,10 +164,9 @@ export async function getProdukTerlaris(): Promise<ProdukTerlaris[]> {
     modalMap.set(p.nama_produk, p.modal_per_unit);
   }
 
-  // Kelompokkan transaksi per nama produk
   const kelompok = new Map<string, KelompokProduk>();
 
-  for (const t of transaksiBulanIni) {
+  for (const t of transaksiList) {
     const existing = kelompok.get(t.nama_produk);
     if (existing) {
       existing.jumlahTerjual += t.jumlah;
@@ -177,8 +198,20 @@ export async function getProdukTerlaris(): Promise<ProdukTerlaris[]> {
     }
   );
 
-  // Urutkan dari yang paling laris (jumlah terjual terbanyak)
   hasil.sort((a, b) => b.jumlahTerjual - a.jumlahTerjual);
-
   return hasil.slice(0, 5); // ambil 5 teratas
+}
+
+// Produk terlaris untuk PERIODE yang lagi difilter user
+export async function getProdukTerlarisPeriode(
+  awal: string,
+  akhir: string
+): Promise<ProdukTerlaris[]> {
+  return hitungProdukTerlaris(awal, akhir);
+}
+
+// Produk terlaris ALL-TIME — TIDAK terpengaruh filter tanggal,
+// selalu menghitung dari seluruh riwayat transaksi
+export async function getProdukTerlarisAllTime(): Promise<ProdukTerlaris[]> {
+  return hitungProdukTerlaris(null, null);
 }
