@@ -14,12 +14,18 @@
 import { FormEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase-client";
 
 export default function LoginPage() {
+  const supabase = createClient();
+  const router = useRouter();
+
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,13 +35,23 @@ export default function LoginPage() {
       return;
     }
 
-    // TODO: panggil fungsi login Supabase kamu di sini, misal:
-    // const { error } = await supabase.auth.signInWithPassword({
-    //   email: emailOrPhone,
-    //   password,
-    // });
-    // if (error) setStatusMessage(error.message);
-    // else router.push("/dashboard");
+    setIsSubmitting(true);
+    setStatusMessage("");
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: emailOrPhone,
+      password,
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      setStatusMessage("Email/No. HP atau kata sandi salah.");
+      return;
+    }
+
+    router.push("/dashboard");
+    router.refresh();
   };
 
   return (
@@ -56,7 +72,7 @@ export default function LoginPage() {
   />
   <img
     className="absolute right-0 top-0 h-full w-auto object-cover"
-    style={{right: "-160px"}}
+    style={{right: "-180px"}}
     alt=""
     src="/auth/awan.png"
   />
@@ -167,14 +183,15 @@ export default function LoginPage() {
             </div>
 
             {/* Tombol submit */}
-            <button
-              className="flex h-[60px] w-full items-center justify-center gap-2.5 rounded-3xl bg-[#0b192c] p-2.5 text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003fc9]"
-              type="submit"
-            >
-              <span className="font-['Poppins-Regular',Helvetica] text-lg font-normal sm:text-xl">
-                MASUK SEKARANG
-              </span>
-            </button>
+<button
+  className="flex h-[60px] w-full items-center justify-center gap-2.5 rounded-3xl bg-[#0b192c] p-2.5 text-white shadow-sm transition-transform duration-100 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003fc9]"
+  type="submit"
+  disabled={isSubmitting}
+>
+  <span className="font-['Poppins-Regular',Helvetica] text-lg font-normal sm:text-xl">
+    {isSubmitting ? "MEMPROSES..." : "MASUK SEKARANG"}
+  </span>
+</button>
 
             {/* Link daftar */}
             <p className="font-['Poppins-Regular',Helvetica] text-base text-black">
