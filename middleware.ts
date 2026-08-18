@@ -21,7 +21,8 @@ const GUEST_ONLY_ROUTES = ["/login", "/onboarding"];
 
 // Halaman yang BOLEH diakses SIAPA SAJA, baik sudah login maupun
 // belum — TIDAK di-redirect ke mana-mana.
-const ALWAYS_PUBLIC_ROUTES = ["/about", "/contact"];
+// "/" = Landing Page publik, tetap tampil walau user sudah login.
+const ALWAYS_PUBLIC_ROUTES = ["/", "/about", "/contact"];
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -66,7 +67,7 @@ export async function middleware(request: NextRequest) {
   // Sudah login tapi malah buka /login atau /onboarding -> lempar ke Dashboard
   if (user && isGuestOnlyRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

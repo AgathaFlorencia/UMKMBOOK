@@ -10,7 +10,7 @@
 import Link from "next/link";
 
 const menu = [
-  { href: "/", label: "Dashboard" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/transaksi", label: "Catat Transaksi" },
   { href: "/produk", label: "Produk" },
   { href: "/riwayat", label: "Riwayat" },

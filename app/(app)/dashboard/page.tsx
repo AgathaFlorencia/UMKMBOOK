@@ -1,5 +1,5 @@
 // ============================================================
-// HALAMAN: DASHBOARD (/)
+// HALAMAN: DASHBOARD (/dashboard)
 // ============================================================
 // Sekarang jadi PUSAT INFORMASI utama, gabungan dari:
 // 1. Ringkasan Hari Ini (arus kas harian, tetap seperti sebelumnya)
@@ -13,6 +13,8 @@
 // data yang ditampilkan secara langsung (tanpa reload halaman).
 //
 // Proteksi login untuk halaman ini diatur terpusat di middleware.ts.
+// Sebelumnya halaman ini ada di "/", sekarang dipindah ke "/dashboard"
+// supaya "/" bisa dipakai Landing Page publik.
 
 "use client";
 

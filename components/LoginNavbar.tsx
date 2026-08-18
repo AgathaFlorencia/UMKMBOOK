@@ -16,7 +16,7 @@ export default function LoginNavbar() {
       </Link>
 
       <div className="flex gap-4 text-sm">
-        <Link href="/login" className="hover:underline">
+        <Link href="/" className="hover:underline">
           Home
         </Link>
         <Link href="/about" className="hover:underline">
