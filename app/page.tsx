@@ -84,7 +84,7 @@ export default function LandingPage() {
 
         {/* max-w dilepas lebih lebar (2200px) supaya di monitor gede,
             teks & ilustrasi ke-geser ke pinggir, BUKAN membesar */}
-        <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-between gap-14 lg:gap-8 px-6 sm:px-10 lg:px-[100px] max-w-[2200px] w-full mx-auto py-16 lg:py-0">
+                <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-between gap-14 lg:gap-8 px-6 sm:px-10 lg:px-[100px] max-w-[1600px] w-full mx-auto py-16 lg:py-0">
           <section
             className="w-full max-w-[446px] text-center lg:text-left"
             aria-labelledby="hero-heading"
