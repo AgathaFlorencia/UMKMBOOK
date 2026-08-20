@@ -1,21 +1,3 @@
-// ============================================================
-// HALAMAN: LANDING PAGE (/)
-// ============================================================
-// Halaman publik pertama yang dilihat semua orang, baik yang
-// sudah login maupun belum (diatur di middleware.ts, "/" ada
-// di ALWAYS_PUBLIC_ROUTES).
-//
-// Dari sini user pilih:
-// - "Masuk"  -> /login
-// - "Daftar" -> /onboarding
-//
-// Font Poppins di-scope KHUSUS di halaman ini (tidak menyentuh
-// root layout/globals.css) supaya halaman lain tidak terpengaruh.
-//
-// Desain mengikuti Figma (desktop). Untuk tablet/mobile disusun
-// ulang jadi layout flex yang menyusut proporsional, karena
-// Figma yang tersedia hanya versi desktop.
-
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -33,10 +15,6 @@ const navigationItems = [
   { label: "Contact", href: "/contact" },
 ];
 
-// Posisi & ukuran ilustrasi di bawah ini dalam PERSEN, dihitung
-// proporsional dari ukuran asli di Figma (container 593x654px),
-// supaya ilustrasi tetap presisi relatif satu sama lain di
-// segala ukuran layar (scale bareng, bukan pecah).
 const floatingIllustrations = [
   {
     src: "/landing/notebook.png",
@@ -68,7 +46,6 @@ export default function LandingPage() {
       className={`${poppins.variable} relative w-full min-h-screen overflow-hidden bg-[linear-gradient(234deg,rgba(31,104,186,1)_0%,rgba(61,127,200,1)_63%)]`}
       style={{ fontFamily: "var(--font-poppins)" }}
     >
-      {/* Background pattern dari Figma */}
       <img
         className="absolute inset-0 w-full h-full object-cover"
         alt=""
@@ -77,11 +54,10 @@ export default function LandingPage() {
       />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* ============ HEADER ============ */}
-        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 sm:px-10 lg:px-[6vw] pt-8 lg:pt-[clamp(48px,4vw,71px)]">
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-6 sm:px-10 lg:px-[6vw] pt-8 lg:pt-[71px] xl:pt-[90px] 2xl:pt-[110px]">
           <a href="/" aria-label="UMKM Book, kembali ke halaman utama">
             <img
-              className="w-[130px] sm:w-[150px] lg:w-[clamp(150px,10vw,180px)] h-auto"
+              className="w-[130px] sm:w-[150px] lg:w-[162px] xl:w-[190px] 2xl:w-[220px] h-auto"
               alt="Logo UMKM Book"
               src="/landing/logo.png"
             />
@@ -97,7 +73,7 @@ export default function LandingPage() {
                   key={item.label}
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className="font-medium text-black text-base sm:text-lg leading-normal underline-offset-4 transition-all duration-200 hover:underline aria-[current=page]:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
+                  className="font-medium text-black text-base sm:text-lg xl:text-xl 2xl:text-2xl leading-normal underline-offset-4 transition-all duration-200 hover:underline aria-[current=page]:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
                 >
                   {item.label}
                 </a>
@@ -106,42 +82,39 @@ export default function LandingPage() {
           </nav>
         </header>
 
-        {/* ============ HERO + ILUSTRASI ============ */}
-        <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-between gap-14 lg:gap-[6vw] px-6 sm:px-10 lg:px-[6vw] max-w-[1728px] w-full mx-auto py-16 lg:py-0">
-          {/* Teks & CTA */}
+        <div className="flex-1 flex flex-col lg:flex-row items-center lg:items-center justify-center lg:justify-between gap-14 lg:gap-8 xl:gap-16 2xl:gap-24 px-6 sm:px-10 lg:px-[100px] max-w-[1728px] w-full mx-auto py-16 lg:py-0">
           <section
-            className="w-full max-w-[446px] lg:max-w-[clamp(446px,32vw,540px)] text-center lg:text-left"
+            className="w-full max-w-[446px] xl:max-w-[520px] 2xl:max-w-[600px] text-center lg:text-left"
             aria-labelledby="hero-heading"
           >
             <h1
               id="hero-heading"
-              className="font-bold text-black leading-tight lg:leading-normal text-3xl sm:text-4xl lg:text-[clamp(2.5rem,2.8vw,3.25rem)]"
+              className="font-bold text-black text-3xl sm:text-4xl lg:text-[40px] xl:text-[48px] 2xl:text-[56px] leading-tight lg:leading-normal"
             >
               Kelola Keuangan Usaha Tanpa Ribet, Fokus Kembangkan Bisnis
             </h1>
-            <p className="mt-6 font-normal text-black leading-normal text-base lg:text-[clamp(1rem,1.1vw,1.2rem)]">
+            <p className="mt-6 font-normal text-black text-base xl:text-lg 2xl:text-xl leading-normal">
               Tinggalkan catatan manual. Catat transaksi dan pantau
               keuntungan usaha Anda secara real-time kapan saja.
             </p>
             <div className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-6 sm:gap-10">
               <a
                 href="/onboarding"
-                className="flex w-[160px] sm:w-[185px] lg:w-[clamp(185px,13vw,215px)] h-[56px] sm:h-[60px] lg:h-[clamp(60px,4.2vw,68px)] items-center justify-center gap-2.5 p-2.5 rounded-[10px] border border-solid border-[#1e1e1e] font-semibold text-[#1e1e1e] text-lg sm:text-xl lg:text-[clamp(1.25rem,1.4vw,1.4rem)] leading-normal transition-all duration-200 ease-out hover:bg-[#1e1e1e] hover:text-white active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
+                className="flex w-[160px] sm:w-[185px] xl:w-[210px] 2xl:w-[240px] h-[56px] sm:h-[60px] xl:h-[66px] 2xl:h-[74px] items-center justify-center gap-2.5 p-2.5 rounded-[10px] border border-solid border-[#1e1e1e] font-semibold text-[#1e1e1e] text-lg sm:text-xl xl:text-2xl leading-normal transition-all duration-200 ease-out hover:bg-[#1e1e1e] hover:text-white active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
               >
                 Daftar
               </a>
               <a
                 href="/login"
-                className="flex w-[160px] sm:w-[185px] lg:w-[clamp(185px,13vw,215px)] h-[56px] sm:h-[60px] lg:h-[clamp(60px,4.2vw,68px)] items-center justify-center gap-2.5 p-2.5 bg-[#0b192c] rounded-[10px] font-normal text-[#ffb800] text-lg sm:text-xl lg:text-[clamp(1.25rem,1.4vw,1.4rem)] leading-normal transition-all duration-200 ease-out hover:bg-[#16263f] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
+                className="flex w-[160px] sm:w-[185px] xl:w-[210px] 2xl:w-[240px] h-[56px] sm:h-[60px] xl:h-[66px] 2xl:h-[74px] items-center justify-center gap-2.5 p-2.5 bg-[#0b192c] rounded-[10px] font-normal text-[#ffb800] text-lg sm:text-xl xl:text-2xl leading-normal transition-all duration-200 ease-out hover:bg-[#16263f] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
               >
                 Masuk
               </a>
             </div>
           </section>
 
-          {/* Ilustrasi */}
           <section
-            className="relative w-full max-w-[320px] sm:max-w-[440px] lg:max-w-[clamp(400px,38vw,700px)] aspect-[593/654]"
+            className="relative w-full max-w-[320px] sm:max-w-[440px] lg:max-w-[593px] xl:max-w-[680px] 2xl:max-w-[760px] aspect-[593/654]"
             aria-label="Ilustrasi fitur UMKM Book"
           >
             <img
