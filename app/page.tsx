@@ -16,6 +16,9 @@
 // ulang jadi layout flex yang menyusut proporsional, karena
 // Figma yang tersedia hanya versi desktop.
 
+"use client";
+
+import { usePathname } from "next/navigation";
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
@@ -58,6 +61,8 @@ const floatingIllustrations = [
 ];
 
 export default function LandingPage() {
+  const pathname = usePathname();
+
   return (
     <main
       className={`${poppins.variable} relative w-full min-h-screen overflow-hidden bg-[linear-gradient(234deg,rgba(31,104,186,1)_0%,rgba(61,127,200,1)_63%)]`}
@@ -85,16 +90,19 @@ export default function LandingPage() {
             aria-label="Navigasi utama"
             className="flex items-center gap-6 sm:gap-10 lg:gap-[66px]"
           >
-            
-            {navigationItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                className="font-medium text-black text-base sm:text-lg leading-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
-              >
-                {item.label}
-              </a>
-            ))}
+            {navigationItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className="font-medium text-black text-base sm:text-lg leading-normal underline-offset-4 transition-all duration-200 hover:underline aria-[current=page]:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
+                >
+                  {item.label}
+                </a>
+              );
+            })}
           </nav>
         </header>
 
@@ -118,13 +126,13 @@ export default function LandingPage() {
             <div className="mt-10 flex flex-wrap items-center justify-center lg:justify-start gap-6 sm:gap-10">
               <a
                 href="/onboarding"
-                className="flex w-[160px] sm:w-[185px] h-[56px] sm:h-[60px] items-center justify-center gap-2.5 p-2.5 rounded-[10px] border border-solid border-[#1e1e1e] font-semibold text-[#1e1e1e] text-lg sm:text-xl leading-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
+                className="flex w-[160px] sm:w-[185px] h-[56px] sm:h-[60px] items-center justify-center gap-2.5 p-2.5 rounded-[10px] border border-solid border-[#1e1e1e] font-semibold text-[#1e1e1e] text-lg sm:text-xl leading-normal transition-all duration-200 ease-out hover:bg-[#1e1e1e] hover:text-white active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
               >
                 Daftar
               </a>
               <a
                 href="/login"
-                className="flex w-[160px] sm:w-[185px] h-[56px] sm:h-[60px] items-center justify-center gap-2.5 p-2.5 bg-[#0b192c] rounded-[10px] font-normal text-[#ffb800] text-lg sm:text-xl leading-normal focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
+                className="flex w-[160px] sm:w-[185px] h-[56px] sm:h-[60px] items-center justify-center gap-2.5 p-2.5 bg-[#0b192c] rounded-[10px] font-normal text-[#ffb800] text-lg sm:text-xl leading-normal transition-all duration-200 ease-out hover:bg-[#16263f] active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0b192c]"
               >
                 Masuk
               </a>
