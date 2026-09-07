@@ -1,10 +1,6 @@
 // ============================================================
 // LIB: PRODUK (fungsi-fungsi untuk fitur Daftar Produk)
 // ============================================================
-// File ini isinya fungsi buat ngambil & ngubah data produk milik
-// user yang sedang login. Dipakai di halaman /transaksi (buat
-// dropdown/autofill) dan halaman /produk (buat kelola produk).
-
 import { createClient } from "@/lib/supabase-client";
 
 export interface Produk {
@@ -58,6 +54,32 @@ export async function updateProduk(
       harga_terbaru: input.hargaTerbaru,
       modal_per_unit: input.modalPerUnit,
     })
+    .eq("id", produkId);
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+
+export interface HasilHapusProduk {
+  success: boolean;
+  error?: string;
+}
+
+// PENTING: sama seperti update, hapus produk di sini TIDAK
+// menghapus transaksi yang sudah tercatat, karena transaksi
+// menyimpan datanya sendiri (nama & harga saat itu) secara
+// terpisah dari tabel "produk".
+export async function deleteProduk(
+  produkId: string
+): Promise<HasilHapusProduk> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from("produk")
+    .delete()
     .eq("id", produkId);
 
   if (error) {

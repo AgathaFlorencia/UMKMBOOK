@@ -1,17 +1,11 @@
-// ============================================================
-// LAYOUT: GROUP (app) — bungkus halaman SETELAH login
-// ============================================================
-// Semua halaman di dalam grup ini (Dashboard, Transaksi, Produk,
-// Riwayat, Kasbon, Laporan, Pengaturan) pakai Navbar utama yang
-// sudah ada sebelumnya.
+import type { ReactNode } from "react";
+import { Sidebar } from "@/components/dashboard/Sidebar";
 
-import Navbar from "@/components/Navbar";
-
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+export default function AppLayout({ children }: { children: ReactNode }) {
   return (
-    <>
-      <Navbar />
-      {children}
-    </>
+    <div className="flex min-h-screen w-full bg-white">
+      <Sidebar />
+      <div className="flex-1">{children}</div>
+    </div>
   );
 }
