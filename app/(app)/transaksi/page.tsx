@@ -1,25 +1,23 @@
 // ============================================================
 // HALAMAN: CATAT TRANSAKSI (/transaksi)
 // ============================================================
-// Halaman PALING SERING dipakai user. Pilih "Jual" atau
-// "Beli/Keluar", lalu isi nama produk + harga + jumlah + satuan.
+// UI sudah disesuaikan sama desain Figma (card putih dengan
+// header navy, input abu-abu, tombol "Simpan" navy+gold).
 //
-// Fitur autofill: nama produk pakai <datalist> (dropdown bawaan
-// browser tapi tetap bisa diketik bebas kalau produknya baru).
-// Kalau nama yang diketik cocok sama produk yang sudah ada,
-// harga & satuan otomatis keisi dari data produk itu (tapi user
-// tetap bisa mengubahnya kalau mau harga beda di transaksi ini).
-//
-// Logic backend-nya (cek/buat produk baru, simpan transaksi
-// dengan harga snapshot) ada di lib/transaksi.ts — halaman ini
-// cuma manggil fungsi catatTransaksi() dari sana.
+// Logic-nya tetap sama seperti versi sebelumnya:
+// - Toggle Jual / Beli/Keluar
+// - Autofill: nama produk pakai <datalist>, kalau nama yang
+//   diketik cocok sama produk yang sudah ada, harga & satuan
+//   otomatis keisi (tapi tetap bisa diubah manual).
+// - Logic backend (cek/buat produk baru, simpan transaksi
+//   dengan harga snapshot) ada di lib/transaksi.ts — halaman
+//   ini cuma manggil fungsi catatTransaksi() dari sana.
 //
 // Proteksi login untuk halaman ini diatur terpusat di middleware.ts.
 
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { catatTransaksi, type JenisTransaksi } from "@/lib/transaksi";
 import { getDaftarProduk, type Produk } from "@/lib/produk";
 
@@ -27,9 +25,10 @@ import { getDaftarProduk, type Produk } from "@/lib/produk";
 // baru (belum punya produk sama sekali) tetap ada opsi pilihan.
 const SATUAN_UMUM = ["porsi", "kg", "gram", "pcs", "pasang", "liter", "box"];
 
-export default function TransaksiPage() {
-  const router = useRouter();
+// Berapa lama pesan "berhasil disimpan" tampil sebelum hilang sendiri.
+const DURASI_PESAN_SUKSES_MS = 3000;
 
+export default function TransaksiPage() {
   const [daftarProduk, setDaftarProduk] = useState<Produk[]>([]);
   const [jenis, setJenis] = useState<JenisTransaksi>("jual");
   const [namaProduk, setNamaProduk] = useState("");
@@ -38,10 +37,19 @@ export default function TransaksiPage() {
   const [satuan, setSatuan] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [sukses, setSukses] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Ambil daftar produk sekali waktu halaman dibuka
   useEffect(() => {
     getDaftarProduk().then(setDaftarProduk);
+  }, []);
+
+  // Bersihin timer pesan sukses kalau halaman ditinggalkan
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   // Daftar satuan untuk dropdown: gabungan dari satuan yang sudah
@@ -68,6 +76,7 @@ export default function TransaksiPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSukses(false);
     setLoading(true);
 
     const hasil = await catatTransaksi({
@@ -85,101 +94,160 @@ export default function TransaksiPage() {
       return;
     }
 
-    // Berhasil -> balik ke Dashboard
-    router.push("/");
-    router.refresh();
+    // Berhasil -> tetap di halaman ini, kosongin form biar siap
+    // dipakai catat transaksi berikutnya, dan kasih tanda sukses.
+    setNamaProduk("");
+    setHarga("");
+    setJumlah("");
+    setSatuan("");
+    setSukses(true);
+
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => setSukses(false), DURASI_PESAN_SUKSES_MS);
   }
 
   return (
-    <main className="min-h-screen p-6">
-      <h1 className="text-2xl font-bold mb-4">Catat Transaksi</h1>
+    <main
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden rounded-tl-[30px] rounded-bl-[30px] bg-[linear-gradient(235deg,rgba(31,104,186,1)_0%,rgba(61,127,200,1)_63%)] p-6"
+      aria-label="Halaman Transaksi"
+    >
+      <form
+        className="flex w-full max-w-[446px] flex-col items-center overflow-hidden rounded-2xl bg-white"
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        <header className="flex w-full items-center justify-center bg-[#081937] px-6 py-5">
+          <h1 className="[font-family:'Inter-SemiBold',Helvetica] text-[32px] font-semibold text-white sm:text-[40px]">
+            Transaksi
+          </h1>
+        </header>
 
-      <div className="flex gap-2 mb-6">
-        <button
-          type="button"
-          onClick={() => setJenis("jual")}
-          className={`px-4 py-2 rounded-lg ${
-            jenis === "jual" ? "bg-black text-white" : "bg-gray-100"
-          }`}
-        >
-          Jual
-        </button>
-        <button
-          type="button"
-          onClick={() => setJenis("beli")}
-          className={`px-4 py-2 rounded-lg ${
-            jenis === "beli" ? "bg-black text-white" : "bg-gray-100"
-          }`}
-        >
-          Beli / Keluar
-        </button>
-      </div>
+        <div className="flex w-full flex-col gap-5 px-6 pt-6">
+          {/* Toggle Jual / Beli — nggak ada di mockup Figma, tapi
+              tetap dibutuhkan biar transaksi tercatat dengan jenis
+              yang benar, jadi ditambahkan mengikuti palet warna
+              yang sama (navy + gold) */}
+          <div
+            className="flex w-full gap-1.5 rounded-lg bg-[#d6d6d6] p-1.5"
+            role="radiogroup"
+            aria-label="Jenis transaksi"
+          >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={jenis === "jual"}
+              onClick={() => setJenis("jual")}
+              className={`flex-1 rounded-md py-2 text-sm font-semibold transition-colors [font-family:'Poppins-Regular',Helvetica] ${
+                jenis === "jual" ? "bg-[#081937] text-[#ffb800]" : "text-[#848484]"
+              }`}
+            >
+              Jual
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={jenis === "beli"}
+              onClick={() => setJenis("beli")}
+              className={`flex-1 rounded-md py-2 text-sm font-semibold transition-colors [font-family:'Poppins-Regular',Helvetica] ${
+                jenis === "beli" ? "bg-[#081937] text-[#ffb800]" : "text-[#848484]"
+              }`}
+            >
+              Beli / Keluar
+            </button>
+          </div>
 
-      <form onSubmit={handleSubmit} className="max-w-sm space-y-4">
-        {/* Nama produk: dropdown dari produk yang sudah ada,
-            TAPI tetap bisa diketik bebas kalau produk baru */}
-        <div>
-          <input
-            type="text"
-            list="daftar-nama-produk"
-            placeholder="Nama produk/layanan (contoh: Nasi Goreng)"
-            className="w-full border rounded-lg p-3"
-            value={namaProduk}
-            onChange={(e) => handleNamaProdukChange(e.target.value)}
-            required
-          />
-          <datalist id="daftar-nama-produk">
-            {daftarProduk.map((p) => (
-              <option key={p.id} value={p.nama_produk} />
-            ))}
-          </datalist>
+          {/* Nama produk: dropdown dari produk yang sudah ada,
+              TAPI tetap bisa diketik bebas kalau produk baru */}
+          <label className="flex h-[57px] w-full items-center gap-2.5 rounded-lg bg-[#d6d6d6] p-2.5">
+            <span className="sr-only">Nama produk atau layanan</span>
+            <input
+              className="h-full w-full bg-transparent [font-family:'Poppins-Regular',Helvetica] text-base text-[#848484] outline-none placeholder:text-[#848484]"
+              type="text"
+              list="daftar-nama-produk"
+              value={namaProduk}
+              onChange={(e) => handleNamaProdukChange(e.target.value)}
+              placeholder="Nama produk / layanan"
+              autoComplete="off"
+              required
+            />
+            <datalist id="daftar-nama-produk">
+              {daftarProduk.map((p) => (
+                <option key={p.id} value={p.nama_produk} />
+              ))}
+            </datalist>
+          </label>
+
+          <label className="flex h-[57px] w-full items-center gap-2.5 rounded-lg bg-[#d6d6d6] p-2.5">
+            <span className="sr-only">Harga per satuan</span>
+            <input
+              className="h-full w-full bg-transparent [font-family:'Inter-Regular',Helvetica] text-base text-[#848484] outline-none placeholder:text-[#848484]"
+              type="number"
+              value={harga}
+              onChange={(e) => setHarga(e.target.value)}
+              placeholder="Harga per satuan (contoh : Rp 5.000)"
+              inputMode="numeric"
+              min="0"
+              required
+            />
+          </label>
+
+          <label className="flex h-[57px] w-full items-center gap-2.5 rounded-lg bg-[#d6d6d6] p-2.5">
+            <span className="sr-only">Jumlah</span>
+            <input
+              className="h-full w-full bg-transparent [font-family:'Poppins-Regular',Helvetica] text-base text-[#848484] outline-none placeholder:text-[#848484]"
+              type="number"
+              value={jumlah}
+              onChange={(e) => setJumlah(e.target.value)}
+              placeholder="Jumlah (contoh : 2)"
+              min="0"
+              required
+            />
+          </label>
+
+          {/* Satuan: sama, dropdown tapi tetap bisa ketik bebas */}
+          <label className="flex h-[57px] w-full items-center gap-2.5 rounded-lg bg-[#d6d6d6] p-2.5">
+            <span className="sr-only">Satuan</span>
+            <input
+              className="h-full w-full bg-transparent [font-family:'Poppins-Regular',Helvetica] text-base text-[#848484] outline-none placeholder:text-[#848484]"
+              type="text"
+              list="daftar-satuan"
+              value={satuan}
+              onChange={(e) => setSatuan(e.target.value)}
+              placeholder="Satuan (contoh : porsi, kg , pasang)"
+              autoComplete="off"
+              required
+            />
+            <datalist id="daftar-satuan">
+              {daftarSatuan.map((s) => (
+                <option key={s} value={s} />
+              ))}
+            </datalist>
+          </label>
         </div>
 
-        <input
-          type="number"
-          placeholder="Harga per satuan (contoh: 15000)"
-          className="w-full border rounded-lg p-3"
-          value={harga}
-          onChange={(e) => setHarga(e.target.value)}
-          required
-          min="0"
-        />
-        <input
-          type="number"
-          placeholder="Jumlah (contoh: 2)"
-          className="w-full border rounded-lg p-3"
-          value={jumlah}
-          onChange={(e) => setJumlah(e.target.value)}
-          required
-          min="0"
-        />
+        {error && (
+          <p className="mt-4 px-6 text-sm text-red-500" role="alert">
+            {error}
+          </p>
+        )}
 
-        {/* Satuan: sama, dropdown tapi tetap bisa ketik bebas */}
-        <div>
-          <input
-            type="text"
-            list="daftar-satuan"
-            placeholder="Satuan (contoh: porsi, kg, pasang)"
-            className="w-full border rounded-lg p-3"
-            value={satuan}
-            onChange={(e) => setSatuan(e.target.value)}
-            required
-          />
-          <datalist id="daftar-satuan">
-            {daftarSatuan.map((s) => (
-              <option key={s} value={s} />
-            ))}
-          </datalist>
-        </div>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {sukses && (
+          <p
+            className="mt-4 flex items-center gap-2 rounded-lg bg-[#e7f6ec] px-4 py-2 text-sm font-semibold text-[#1f8a44]"
+            role="status"
+          >
+            Transaksi berhasil disimpan
+          </p>
+        )}
 
         <button
+          className="my-6 flex h-[47px] w-[149px] items-center justify-center rounded-[10px] bg-[#081937] disabled:opacity-50"
           type="submit"
           disabled={loading}
-          className="w-full bg-black text-white p-3 rounded-lg font-medium disabled:opacity-50"
         >
-          {loading ? "Menyimpan..." : "Simpan Transaksi"}
+          <span className="[font-family:'Poppins-SemiBold',Helvetica] text-xl font-semibold text-[#ffb800]">
+            {loading ? "Menyimpan..." : "Simpan"}
+          </span>
         </button>
       </form>
     </main>

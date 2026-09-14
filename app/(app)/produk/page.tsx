@@ -81,20 +81,6 @@ export default function ProdukPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </form>
-
-        <div className="flex items-center gap-2.5 self-end md:self-auto">
-          <div className="flex h-[41px] w-[41px] items-center justify-center rounded-full bg-white/30 text-sm font-semibold text-white">
-            {profil?.namaUsaha ? profil.namaUsaha.charAt(0).toUpperCase() : "A"}
-          </div>
-          <div className="flex flex-col gap-0.5 text-white">
-            <span className="text-[10px] font-semibold">
-              {profil?.namaUsaha ?? "..."}
-            </span>
-            <span className="text-[10px] font-semibold">
-              {profil?.email ?? ""}
-            </span>
-          </div>
-        </div>
       </div>
 
       {/* Judul + filter */}

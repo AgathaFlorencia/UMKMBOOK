@@ -48,17 +48,17 @@ export default async function RiwayatPage() {
   const kelompok = kelompokkanPerTanggal(riwayat);
 
   return (
-    <main className="min-h-screen p-6">
-      <h1 className="text-2xl font-bold mb-4">Riwayat Transaksi</h1>
+    <main className="min-h-screen w-full overflow-hidden rounded-tl-[30px] rounded-bl-[30px] bg-[linear-gradient(235deg,rgba(31,104,186,1)_0%,rgba(61,127,200,1)_63%)] p-6">
+      <h1 className="text-2xl font-bold mb-4 text-white">Riwayat Transaksi</h1>
 
       {riwayat.length === 0 ? (
-        <p className="text-gray-500">Belum ada transaksi tercatat.</p>
+        <p className="text-white/80">Belum ada transaksi tercatat.</p>
       ) : (
         <div className="space-y-6">
           {kelompok.map((grup) => (
             <div key={grup.tanggal}>
               {/* Header tanggal, sekaligus total transaksi hari itu */}
-              <div className="flex items-baseline justify-between mb-2 sticky top-0 bg-white py-1">
+              <div className="flex items-baseline justify-between mb-2 sticky top-0 bg-white rounded-lg px-3 py-1.5 shadow-sm">
                 <h2 className="text-sm font-semibold text-gray-700">
                   {formatTanggalIndonesia(grup.tanggal)}
                 </h2>
@@ -67,14 +67,14 @@ export default async function RiwayatPage() {
                 </span>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2 mt-2">
                 {grup.items.map((item) => (
                   <div
                     key={item.id}
-                    className="border rounded-lg p-4 flex items-center justify-between"
+                    className="rounded-lg p-4 flex items-center justify-between bg-white"
                   >
                     <div>
-                      <p className="font-medium">
+                      <p className="font-medium text-black">
                         {item.nama_produk}{" "}
                         <span
                           className={`text-xs px-2 py-0.5 rounded-full ml-1 ${
@@ -91,7 +91,7 @@ export default async function RiwayatPage() {
                         {formatRupiah(item.harga_saat_transaksi)}
                       </p>
                     </div>
-                    <p className="font-semibold">
+                    <p className="font-semibold text-black">
                       {formatRupiah(item.total)}
                     </p>
                   </div>
