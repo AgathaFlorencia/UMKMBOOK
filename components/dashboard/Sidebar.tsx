@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase-client";
 
 type NavItem = {
   href: string;
@@ -18,8 +19,10 @@ const MENU_UTAMA: NavItem[] = [
   { href: "/kasbon", label: "Kasbon", icon: "/dashboard/debt.png" },
 ];
 
+// href disamain ke /pengaturan biar konek sama halaman pengaturan
+// yang beneran ada (folder page-nya /pengaturan, bukan /settings)
 const MENU_AKUN: NavItem[] = [
-  { href: "/settings", label: "Settings", icon: "/dashboard/settings.png" },
+  { href: "/pengaturan", label: "Settings", icon: "/dashboard/settings.png" },
 ];
 
 export function Sidebar() {
@@ -64,7 +67,8 @@ export function Sidebar() {
 
       <nav className="mt-auto mb-[49px] flex flex-col gap-6" aria-label="Account navigation">
         {MENU_AKUN.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive =
+            pathname === item.href || pathname?.startsWith(`${item.href}/`);
           return (
             <Link
               key={item.href}
@@ -85,11 +89,13 @@ export function Sidebar() {
 }
 
 function LogoutButton() {
+  const router = useRouter();
+  const supabase = createClient();
+
   async function handleLogout() {
-    // TODO: sambungkan ke logout Supabase yang sudah ada di project, misalnya:
-    // const supabase = createClient();
-    // await supabase.auth.signOut();
-    // router.push("/login");
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
   }
 
   return (

@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
   // Nama toko & produk terlaris all-time dimuat sekali saja saat halaman dibuka
   useEffect(() => {
-    getProfilToko().then((profil) => setNamaUsaha(profil?.namaUsaha ?? null));
+    getProfilToko().then((profil) => setNamaUsaha(profil?.nama_usaha || null));
     getProdukTerlarisAllTime().then(setProdukTerlarisAllTime);
   }, []);
 
