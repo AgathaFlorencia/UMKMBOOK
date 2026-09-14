@@ -1,14 +1,3 @@
-// ============================================================
-// LAYOUT UTAMA — "bungkus" SEMUA halaman (auth maupun app)
-// ============================================================
-// Ini paling luar, cuma nyimpen <html>/<body> dan metadata.
-// Navbar TIDAK dipasang di sini lagi — sekarang tiap route group
-// punya navbar sendiri:
-// - app/(auth)/layout.tsx -> pakai LoginNavbar (Login, Onboarding,
-//   About, Contact)
-// - app/(app)/layout.tsx  -> pakai Navbar utama (Dashboard,
-//   Transaksi, dll — setelah login)
-
 import type { Metadata } from "next";
 import "./globals.css";
 

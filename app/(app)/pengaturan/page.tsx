@@ -1,9 +1,3 @@
-// ============================================================
-// HALAMAN: PENGATURAN (/pengaturan)
-// ============================================================
-// Edit data usaha (nama usaha & jenis usaha). Logout sudah
-// dipindahkan ke navbar, jadi halaman ini murni form profil toko.
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";

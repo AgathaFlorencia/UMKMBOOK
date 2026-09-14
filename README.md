@@ -22,29 +22,9 @@ Aplikasi pencatatan keuangan super simpel untuk pemilik usaha mikro (warung, lau
    ```
 5. Buka `http://localhost:3000`
 
-## Struktur Folder — Penjelasan Lengkap
-
-Ini bagian paling penting buat dipahami sebelum ikut develop.
-
 ### `app/` — Semua halaman website (Frontend + Routing)
 
 Di Next.js, **tiap folder di dalam `app/` otomatis jadi satu halaman** dengan URL sesuai nama foldernya. Gak perlu setting router terpisah kayak di React biasa — ini yang disebut **App Router**.
-
-```
-app/
-├── page.tsx              -> halaman "/"           (Dashboard)
-├── layout.tsx             -> bungkus SEMUA halaman (Navbar dsb)
-├── login/page.tsx          -> halaman "/login"
-├── onboarding/page.tsx     -> halaman "/onboarding" (sign up)
-├── transaksi/page.tsx      -> halaman "/transaksi"
-├── produk/page.tsx         -> halaman "/produk"
-├── riwayat/page.tsx        -> halaman "/riwayat"
-├── kasbon/page.tsx         -> halaman "/kasbon"
-├── laporan/page.tsx        -> halaman "/laporan"
-└── pengaturan/page.tsx     -> halaman "/pengaturan"
-```
-
-Jadi kalau mau nambah halaman baru, tinggal bikin folder baru + file `page.tsx` di dalamnya. Otomatis jadi route baru, gak perlu daftarin ke mana-mana.
 
 ### `components/` — Potongan UI yang dipakai berulang
 
@@ -67,13 +47,3 @@ Jadi kalau ditanya "mana bagian backend-nya?" — jawabannya: **gak ada folder b
 - **`.env.local`** (harus dibuat sendiri, lihat `.env.local.example`) — tempat naruh kunci rahasia Supabase. **Jangan pernah di-commit ke Git.**
 - **`app/globals.css`** — styling global (dipakai Tailwind CSS)
 - **`package.json`** — daftar semua library yang dipakai project ini
-
-## Ringkasan buat yang baru gabung
-
-| Mau ngerjain apa? | Buka folder/file ini |
-|---|---|
-| Tambah/ubah tampilan halaman tertentu | `app/nama-halaman/page.tsx` |
-| Tambah komponen UI yang dipakai berulang | `components/` |
-| Ambil/simpan data ke database | `lib/supabase-client.ts` atau `lib/supabase-server.ts` |
-| Ubah menu navigasi | `components/Navbar.tsx` |
-| Ubah tampilan yang muncul di SEMUA halaman | `app/layout.tsx` |

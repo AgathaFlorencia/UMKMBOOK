@@ -1,10 +1,3 @@
-// ============================================================
-// KOMPONEN: MODAL KONFIRMASI (bisa dipakai ulang di halaman lain)
-// ============================================================
-// Modal generik buat konfirmasi aksi yang gak bisa di-undo gampang
-// (misal: tandai kasbon lunas). Dibikin custom (bukan window.confirm
-// bawaan browser) biar tampilannya konsisten sama desain UMKMBook.
-
 interface ConfirmModalProps {
   isOpen: boolean;
   title: string;

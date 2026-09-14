@@ -1,12 +1,4 @@
 // app/(auth)/onboarding/page.tsx
-// ============================================================
-// HALAMAN: SIGN UP (/onboarding)
-// ============================================================
-// Dipakai SEKALI DOANG waktu user baru pertama daftar.
-// Alurnya: Sign Up (email + password) -> lanjut isi nama usaha
-// + jenis usaha -> data disimpan ke tabel "usaha" yang nempel
-// ke user_id yang baru dibuat.
-
 "use client";
 
 import { FormEvent, useState } from "react";

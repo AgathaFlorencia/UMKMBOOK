@@ -1,21 +1,3 @@
-// ============================================================
-// LIB: KASBON (fungsi-fungsi untuk fitur Kasbon)
-// ============================================================
-// Dipakai di halaman Kasbon (app/kasbon/page.tsx). Fitur ini
-// OPSIONAL sesuai konsep awal — cuma dipakai kalau owner memang
-// ada pelanggan yang ngutang.
-//
-// MIGRATION YANG PERLU DIJALANIN DULU DI SUPABASE (kolom
-// `dibayarkan` belum ada di tabel `kasbon` yang lama):
-//
-//   alter table kasbon
-//     add column dibayarkan numeric not null default 0;
-//
-// Kolom "Tanggal" di UI TIDAK butuh kolom baru — dia cuma alias
-// dari `created_at` yang sudah ada (lihat `.select(...)` di
-// bawah, ada `tanggal:created_at`), jadi hasil query otomatis
-// punya field bernama `tanggal`.
-
 import { createClient } from "@/lib/supabase-client";
 
 export interface Kasbon {

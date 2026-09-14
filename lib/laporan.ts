@@ -1,12 +1,3 @@
-// ============================================================
-// LIB: LAPORAN (ringkasan & insight untuk PERIODE yang dipilih)
-// ============================================================
-// Dipakai di halaman Dashboard, bagian filter tanggal. Beda
-// dengan lib/dashboard.ts yang selalu "hari ini", semua fungsi
-// di sini menerima rentang tanggal (awal, akhir) dari filter
-// yang dipilih user — bisa satu tanggal spesifik (awal = akhir
-// sama) atau rentang beberapa hari/bulan.
-
 import { createClient } from "@/lib/supabase-client";
 
 // ------------------------------------------------------------
